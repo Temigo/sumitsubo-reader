@@ -49,3 +49,4 @@ sdkconfig.sticky
 sdkconfig.x4pro
 flake.*
 .devctl/
+.venv/

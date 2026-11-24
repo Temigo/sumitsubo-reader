@@ -42,12 +42,19 @@ bool closesLine(const std::string& ch) {   // never starts a line
     if (ch == m) return true;
   return false;
 }
+// Days since 1970-01-01 of the local calendar date at time t. Worked out from the date itself:
+// the device's C library has no timegm().
 int32_t localDay(const time_t t) {
   struct tm tm {};
   localtime_r(&t, &tm);
-  struct tm utc = tm;
-  utc.tm_isdst = 0;
-  return static_cast<int32_t>(timegm(&utc) / 86400);
+  int y = tm.tm_year + 1900;
+  const int m = tm.tm_mon + 1, d = tm.tm_mday;
+  if (m <= 2) --y;
+  const int era = (y >= 0 ? y : y - 399) / 400;
+  const int yoe = y - era * 400;                                      // year of the 400-year cycle
+  const int doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;     // day of a year that starts in March
+  const int doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+  return static_cast<int32_t>(era * 146097 + doe - 719468);
 }
 std::string dayText(const int32_t day, const char* fmt) {
   const time_t t = static_cast<time_t>(day) * 86400;
@@ -94,7 +101,7 @@ void StudyActivity::onEnter() {
     screen = Screen::Message;
   } else if (!clockTrusted || today < study.lastReviewDay()) {
     // Reviews are scheduled by day, so a clock that lost its time must not be believed.
-    today = std::max(std::max(today, study.lastReviewDay()), study.settings().writtenDay);
+    today = std::max<int32_t>(std::max(today, study.lastReviewDay()), study.settings().writtenDay);
     screen = Screen::DateCheck;
   } else {
     screen = Screen::Today;

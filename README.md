@@ -5,7 +5,7 @@ It reviews flashcards made from your own Japanese material (papers, books, talks
 the reader use what you know: how much of a book you can read today, which words are new, which
 furigana you no longer need.
 
-The cards are made on a computer by the [Sumitsubo desktop program](https://github.com/OWNER/sumitsubo).
+The cards are made on a computer by the [Sumitsubo desktop program](https://github.com/Temigo/sumitsubo).
 The device schedules and shows them; a sync carries reviews one way and the deck the other.
 
 <p align="center">
@@ -47,18 +47,10 @@ How to use all of it: **[docs/study.md](docs/study.md)**.
 You need the device (or the simulator), an SD card, and the desktop program.
 
 1. **Install the desktop program** and add a source or two. See its
-   [README](https://github.com/OWNER/sumitsubo#readme).
-2. **Build and flash this firmware.** There are no pre-built files yet.
-
-   ```bash
-   git clone --recursive https://github.com/OWNER/sumitsubo-reader.git
-   cd sumitsubo-reader
-   pio run              # build
-   pio run -t upload    # flash, with the device connected by USB-C
-   ```
-
-   This is Matcha's build, unchanged: [docs/building.md](docs/building.md) has the details and
-   the other boards. To try it with no device, see [the simulator](docs/study.md#trying-it-without-a-device).
+   [README](https://github.com/Temigo/sumitsubo#readme).
+2. **Build and flash this firmware.** There are no pre-built files yet:
+   see [Building the firmware](#building-the-firmware) below. To try it with no device, see
+   [the simulator](docs/study.md#trying-it-without-a-device).
 3. **Prepare the card once.** With the SD card in a card reader:
 
    ```bash
@@ -77,6 +69,41 @@ You need the device (or the simulator), an SD card, and the desktop program.
    The desktop program's Reader page has the same thing as a button.
 
 Then open **Study** on the device.
+
+## Building the firmware
+
+The build is Matcha's, unchanged. It uses PlatformIO, in the version Matcha's own checks pin (the
+[pioarduino](https://github.com/pioarduino/platformio-core) build of PlatformIO Core 6.2), on
+Python 3.13. An older PlatformIO from a Linux distribution's packages will not work. The steps
+below use [uv](https://docs.astral.sh/uv/) to keep all of it in a folder of its own.
+
+```bash
+git clone --recursive https://github.com/Temigo/sumitsubo-reader.git
+cd sumitsubo-reader
+git submodule update --init --recursive      # only if you cloned without --recursive
+
+uv venv --python 3.13 .venv                  # 3.13, not 3.14: PlatformIO cannot set itself up on 3.14 yet
+uv pip install pip https://github.com/pioarduino/platformio-core/archive/refs/tags/v6.2.0.post1.zip
+
+uv run pio run                               # build for the Xteink X3 and X4 (the default)
+uv run pio run -t upload                     # flash, with the device connected by USB-C and awake
+```
+
+The first build downloads the ESP32 toolchain and libraries (several minutes, a few hundred
+megabytes, kept in `~/.platformio`). The firmware is then `.pio/build/default/firmware.bin`.
+
+- **Other boards:** `uv run pio run -e x4pro`, `-e x4c`, `-e sticky`, `-e papermono`. Study has
+  only been tried, in the simulator, as an X3.
+- **Flashing from a browser instead:** open the [CrossPoint flash tool](https://crosspointreader.com/#flash-tools),
+  select your device, click **Custom .bin** and choose `firmware.bin`.
+- **USB-locked devices** must be [unlocked first](https://github.com/crosspoint-reader/crosspoint-reader#usb-locked-devices-xteink-unlocker).
+- **If the build stops on a missing Python module** (PlatformIO installs these itself, but not
+  always reliably), add them and run it again:
+  `uv pip install "littlefs-python>=0.16.0" "fatfs-ng>=0.1.14" "pyyaml>=6.0.2" "rich-click>=1.8.6" "zopfli>=0.2.2" "intelhex>=2.3.0" "rich>=14.0.0" "urllib3<2" "cryptography>=45.0.3" "certifi>=2025.8.3" "ecdsa>=0.19.1" "bitstring>=4.3.1" "reedsolo>=1.5.3,<1.8" "esp-idf-size>=2.0.0" "esp-coredump>=1.14.0"`
+- **Going back to the original firmware** is described in Matcha's and CrossPoint's documents;
+  [docs/fix-bricked-xteink.md](docs/fix-bricked-xteink.md) covers a device that no longer starts.
+
+More on the build, and on running without a device, is in [docs/building.md](docs/building.md).
 
 ## How it works with the desktop program
 

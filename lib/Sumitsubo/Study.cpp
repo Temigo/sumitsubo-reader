@@ -185,8 +185,9 @@ void Study::checkpoint() {
   for (const Rec& r : recs) {
     if (!r.touched) continue;
     std::snprintf(buf, sizeof buf, "%016llx\t%.9g\t%.9g\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", static_cast<unsigned long long>(r.id),
-                  static_cast<double>(r.mem.stability), static_cast<double>(r.mem.difficulty), r.mem.lastDay, r.mem.dueDay,
-                  r.lastAgainDay, r.startedDay, r.againRecent, r.bad, r.suspended ? 1 : 0);
+                  static_cast<double>(r.mem.stability), static_cast<double>(r.mem.difficulty), static_cast<int>(r.mem.lastDay),
+                  static_cast<int>(r.mem.dueDay), static_cast<int>(r.lastAgainDay), static_cast<int>(r.startedDay),
+                  static_cast<int>(r.againRecent), static_cast<int>(r.bad), r.suspended ? 1 : 0);
     out += buf;
   }
   if (store.write(STATE_FILE, out)) dirty = false, fromState = true;
@@ -490,8 +491,9 @@ void Study::undo() {
   r = last.before;
   sum = last.sum;
   char buf[128];
-  std::snprintf(buf, sizeof buf, "%d,%s,undo,%.9g,%.9g,%d,%d,%d,%d", today, hex(r.id).c_str(), r.mem.stability, r.mem.difficulty,
-                r.mem.lastDay, r.mem.dueDay, r.againRecent, r.lastAgainDay);
+  std::snprintf(buf, sizeof buf, "%d,%s,undo,%.9g,%.9g,%d,%d,%d,%d", static_cast<int>(today), hex(r.id).c_str(),
+                static_cast<double>(r.mem.stability), static_cast<double>(r.mem.difficulty), static_cast<int>(r.mem.lastDay),
+                static_cast<int>(r.mem.dueDay), static_cast<int>(r.againRecent), static_cast<int>(r.lastAgainDay));
   log(LOG_FILE, buf);
   hasUndo = false;
   sentence = 0;

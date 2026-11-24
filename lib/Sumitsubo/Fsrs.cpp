@@ -29,7 +29,7 @@ double shortTerm(double s, int r) {
   if (r >= 2) inc = std::max(inc, 1.0);
   return clampS(s * inc);
 }
-double retrievability(double s, int32_t elapsed) { return std::pow(1.0 + FACTOR * std::max(0, elapsed) / s, DECAY); }
+double retrievability(double s, int32_t elapsed) { return std::pow(1.0 + FACTOR * std::max<int32_t>(0, elapsed) / s, DECAY); }
 double nextStability(double d, double s, double ret, int r) {
   if (r == 1) {
     const double longTerm = W[11] * std::pow(d, -W[12]) * (std::pow(s + 1.0, W[13]) - 1.0) * std::exp((1.0 - ret) * W[14]);
@@ -43,7 +43,7 @@ double nextStability(double d, double s, double ret, int r) {
 int32_t interval(const float stability) {
   const double days = (stability / FACTOR) * (std::pow(RETENTION, 1.0 / DECAY) - 1.0);
   // Python's round() is to-even at .5; nearbyint under the default rounding mode is the same.
-  return std::min(std::max(static_cast<int32_t>(std::nearbyint(days)), 1), MAX_INTERVAL);
+  return std::min<int32_t>(std::max<int32_t>(static_cast<int32_t>(std::nearbyint(days)), 1), MAX_INTERVAL);
 }
 
 float recall(const Memory& m, const int32_t today) {
