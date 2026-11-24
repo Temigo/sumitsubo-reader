@@ -79,12 +79,14 @@ class HomeActivity final : public Activity {
   // Convert HomeMenuItem to menu index (used in onEnter)
   static int menuItemToIndex(HomeMenuItem item, HomeMenuItem slot) {
     int i = 0;
+    if (item == HomeMenuItem::STUDY) return i;  // Sumitsubo: Study is the first entry
+    ++i;
     if (item == HomeMenuItem::LIBRARY) return i;
     ++i;
     if (item == HomeMenuItem::FILE_BROWSER) return i;
     ++i;
     if (slot != HomeMenuItem::NONE && item == slot) return i;
-    if (item == HomeMenuItem::PLUGINS) return 0;
+    if (item == HomeMenuItem::PLUGINS) return 1;  // Sumitsubo: after Study
     if (slot != HomeMenuItem::NONE) ++i;
     // File Transfer also opens the OPDS browser, so it returns there without its slot.
     if (item == HomeMenuItem::FILE_TRANSFER || item == HomeMenuItem::OPDS_BROWSER) return i;
@@ -111,6 +113,8 @@ class HomeActivity final : public Activity {
         return HomeTabBar::slotOf(HomeTab::Stats);
       case HomeMenuItem::SETTINGS_MENU:
         return HomeTabBar::slotOf(HomeTab::Settings);
+      case HomeMenuItem::STUDY:  // Sumitsubo
+        return HomeTabBar::slotOf(HomeTab::Study);
       default:
         // OPDS has no tab of its own; land on Home rather than on whatever shares its index.
         return HomeTabBar::slotOf(HomeTab::Home);
@@ -120,6 +124,7 @@ class HomeActivity final : public Activity {
   // Convert menu index to HomeMenuItem (used in loop)
   static HomeMenuItem indexToMenuItem(int idx, HomeMenuItem slot) {
     int i = 0;
+    if (idx == i++) return HomeMenuItem::STUDY;  // Sumitsubo
     if (idx == i++) return HomeMenuItem::LIBRARY;
     if (idx == i++) return HomeMenuItem::FILE_BROWSER;
     if (slot != HomeMenuItem::NONE && idx == i++) return slot;

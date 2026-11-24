@@ -22,6 +22,8 @@ class HalTiltSensor {
   // Tilt gesture state machine
   bool _tiltForwardEvent = false;  // Consumed by wasTiltedForward()
   bool _tiltBackEvent = false;     // Consumed by wasTiltedBack()
+  bool _tiltUpEvent = false;       // Sumitsubo: the other axis, consumed by wasTiltedUp()
+  bool _tiltDownEvent = false;     // Sumitsubo: consumed by wasTiltedDown()
   bool _hadActivity = false;       // Non-consuming flag for sleep timer
   bool _inTilt = false;            // Currently tilted past threshold
   bool _isAwake = false;           // Tracks power state
@@ -63,6 +65,11 @@ class HalTiltSensor {
   // Returns true once per tilt-back gesture (previous page direction).
   // Consumed on read.
   bool wasTiltedBack();
+
+  // Sumitsubo: a flick about the other axis (top edge away from you / towards you), for Study's
+  // Easy and Hard. Which sign is which has not been checked on a device.
+  bool wasTiltedUp();
+  bool wasTiltedDown();
 
   // Non-consuming: true if any tilt activity occurred since last call.
   // Used to reset the auto-sleep inactivity timer.

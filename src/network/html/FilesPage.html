@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Files - Matcha Reader</title>
+  <title>Files - Sumitsubo Reader</title>
   <style>
     .page-header {
       display: flex;
@@ -1225,7 +1225,7 @@
 
   if (currentPath !== '/') {
     const leaf = currentPath.split('/').filter(Boolean).pop();
-    if (leaf) document.title = leaf + ' - Files - Matcha Reader';
+    if (leaf) document.title = leaf + ' - Files - Sumitsubo Reader';
   }
 
   // Network status monitoring
@@ -3194,7 +3194,7 @@ function exportLogToFile(filename = null, isBatch = false) {
   }
   // Extract text from log entries
   const entries = logContainer.querySelectorAll('.log-entry');
-  let logText = `Matcha Reader ${crosspointVersion} - EPUB Conversion Log\n`;
+  let logText = `Sumitsubo Reader ${crosspointVersion} - EPUB Conversion Log\n`;
   logText += `Generated: ${new Date().toLocaleString()}\n`;
   logText += `${'='.repeat(60)}\n\n`;
 

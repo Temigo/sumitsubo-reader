@@ -29,9 +29,9 @@
 
 namespace {
 // AP Mode configuration
-constexpr const char* AP_SSID = "Matcha-Reader";
+constexpr const char* AP_SSID = "Sumitsubo-Reader";  // Sumitsubo
 constexpr const char* AP_PASSWORD = nullptr;  // Open network for ease of use
-constexpr const char* AP_HOSTNAME = "matcha";
+constexpr const char* AP_HOSTNAME = "sumitsubo";  // Sumitsubo: http://sumitsubo.local, where the desktop program looks
 // Longest case is a translated "or http://" prefix (20 bytes) plus an IP or <hostname>.local/;
 // snprintf truncates rather than overruns.
 constexpr size_t URL_BUF_LEN = 48;

@@ -1,5 +1,6 @@
 #include "TextBlock.h"
 
+#include <ReaderLink.h>  // Sumitsubo
 #include <BidiUtils.h>
 #include <GfxRenderer.h>
 #include <Logging.h>
@@ -242,6 +243,11 @@ void TextBlock::layoutRuby(const GfxRenderer& renderer, const int fontId, const 
       while (i + groupWordCount < numWords && (wordStyle(i + groupWordCount) & EpdFontFamily::RUBY_CONTINUE) != 0) {
         groupWordCount++;
       }
+      {  // Sumitsubo: furigana you no longer need is left out (Study's Options)
+        std::string base;
+        for (int k = 0; k < groupWordCount; k++) base += wordText(static_cast<uint16_t>(i + k));
+        if (sumitsubo::link::hideFurigana(base, rubyTexts[i])) continue;
+      }
       // The laid-out span, which includes any spacing layout added between base characters.
       const int lastWordIdx = i + groupWordCount - 1;
       const int lastWordWidth =
@@ -401,6 +407,31 @@ void TextBlock::render(const GfxRenderer& renderer, const int baseFontId, const 
   // nothing (see ChapterHtmlSlimParser::addLineToPage), so shifting here would push the words
   // out of their own line box and into the one below.
   const int rubyShift = (suppressRuby ? 0 : getRubyShift(ascender)) + sizedWordDrop(renderer, fontId);
+
+  // Sumitsubo: a thin line under every word on this line that is still new to you (Study's
+  // Options), as the vertical renderer draws one beside them. A Japanese line arrives as short
+  // pieces, so neighbours are joined and the longest run the book's filter knows wins.
+  if (!scanning && sumitsubo::link::marking()) {
+    const size_t maxBytes = sumitsubo::link::maxWordBytes();
+    std::string run;
+    for (uint16_t i = 0; maxBytes > 0 && i < numWords;) {
+      int best = -1;
+      run.clear();
+      for (uint16_t j = i; j < numWords; j++) {
+        run += wordText(j);
+        if (run.size() > maxBytes) break;
+        if (sumitsubo::link::isNewWord(run)) best = j;
+      }
+      if (best < 0) {
+        i++;
+        continue;
+      }
+      const int from = xposArr[i] + x;
+      const int to = xposArr[best] + x + renderer.getTextWidth(fontId, wordText(static_cast<uint16_t>(best)), wordStyle(static_cast<uint16_t>(best)));
+      renderer.fillRect(std::min(from, to), y + rubyShift + ascender + 3, std::abs(to - from), 2, inkBlack);
+      i = static_cast<uint16_t>(best + 1);
+    }
+  }
 
   for (uint16_t i = 0; i < numWords; i++) {
     const char* word = wordText(i);

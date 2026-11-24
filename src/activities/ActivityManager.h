@@ -30,7 +30,8 @@ enum class HomeMenuItem {
   OPDS_BROWSER,
   FILE_TRANSFER,
   READING_STATS,
-  SETTINGS_MENU
+  SETTINGS_MENU,
+  STUDY  // Sumitsubo
 };
 
 /**
@@ -118,6 +119,7 @@ class ActivityManager {
   // goTo... functions are convenient wrapper for replaceActivity()
   void goToFileTransfer();
   void goToReadingStats();
+  void goToStudy();  // Sumitsubo
   void goToJoinNetwork();  // File Transfer straight into Join Network (post heap-defrag reboot)
   void goToUsbDrive();
   // openSection jumps straight into one group (End = the section list).

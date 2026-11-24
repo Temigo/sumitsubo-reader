@@ -123,10 +123,29 @@ void HalTiltSensor::update(const uint8_t mode, const uint8_t orientation, const 
       break;
   }
 
+  // Sumitsubo: the axis at right angles to the page-turn axis, for a flick up or down.
+  float pitchAxis;
+  switch (orientation) {
+    case CrossPointOrientation::INVERTED: pitchAxis = -gy; break;
+    case CrossPointOrientation::LANDSCAPE_CW: pitchAxis = gx; break;
+    case CrossPointOrientation::LANDSCAPE_CCW: pitchAxis = -gx; break;
+    default: pitchAxis = gy; break;
+  }
+  if (mode == CrossPointTiltPageTurn::TILT_INVERTED) pitchAxis = -pitchAxis;
+  const bool pitchLeads = fabsf(pitchAxis) > fabsf(tiltAxis);
+
   if (_inTilt) {
     // Wait for device to return to neutral before allowing next trigger
-    if (fabsf(tiltAxis) < NEUTRAL_RATE_DPS) {
+    if (fabsf(tiltAxis) < NEUTRAL_RATE_DPS && fabsf(pitchAxis) < NEUTRAL_RATE_DPS) {
       _inTilt = false;
+    }
+  } else if (pitchLeads) {
+    if ((now - _lastTiltMs) >= COOLDOWN_MS && fabsf(pitchAxis) > RATE_THRESHOLD_DPS) {
+      (pitchAxis > 0 ? _tiltUpEvent : _tiltDownEvent) = true;
+      _hadActivity = true;
+      _inTilt = true;
+      _lastTiltMs = now;
+      LOG_INF("GYR", "Pitch Trigger=(%.1f) dps", pitchAxis);
     }
   } else {
     // Check for new tilt gesture (with cooldown)
@@ -169,6 +188,20 @@ bool HalTiltSensor::hadActivity() {
 void HalTiltSensor::clearPendingEvents() {
   _tiltForwardEvent = false;
   _tiltBackEvent = false;
+  _tiltUpEvent = _tiltDownEvent = false;  // Sumitsubo
   _hadActivity = false;
   // Intentionally preserve _inTilt so a held tilt doesn't retrigger on next poll
+}
+
+// Sumitsubo: the second axis.
+bool HalTiltSensor::wasTiltedUp() {
+  const bool was = _tiltUpEvent;
+  _tiltUpEvent = false;
+  return was;
+}
+
+bool HalTiltSensor::wasTiltedDown() {
+  const bool was = _tiltDownEvent;
+  _tiltDownEvent = false;
+  return was;
 }

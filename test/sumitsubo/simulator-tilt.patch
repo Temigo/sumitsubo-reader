@@ -1,0 +1,72 @@
+diff --git a/src/HalTiltSensor.h b/src/HalTiltSensor.h
+index bde3607..3564642 100644
+--- a/src/HalTiltSensor.h
++++ b/src/HalTiltSensor.h
+@@ -3,6 +3,9 @@
+ #include <Arduino.h>
+ 
+ #include "HalGPIO.h"
++#include <cstdlib>
++#include <string>
++#include <vector>
+ 
+ namespace CrossPointOrientation {
+ enum Value : uint8_t {
+@@ -57,8 +60,54 @@ public:
+   void update(const uint8_t mode, const uint8_t /*direction*/, const uint8_t orientation, const bool inReader) {
+     update(mode, orientation, inReader);
+   }
+-  bool wasTiltedForward() { return false; }
+-  bool wasTiltedBack() { return false; }
++  // Sumitsubo: scripted tilts for testing, CROSSPOINT_SIM_TILT="ms:F;ms:B;ms:U;ms:D" (forward,
++  // back, up, down), each delivered once at its time while a screen is reading the sensor.
++  bool wasTiltedForward() { return take('F'); }
++  bool wasTiltedBack() { return take('B'); }
++  bool wasTiltedUp() { return take('U'); }
++  bool wasTiltedDown() { return take('D'); }
+   bool hadActivity() { return false; }
+-  void clearPendingEvents() {}
++  void clearPendingEvents() {
++    const unsigned long now = millis();
++    for (auto &e : plan())
++      if (e.at <= now) e.done = true;
++  }
++
++private:
++  struct Tilt {
++    unsigned long at;
++    char dir;
++    bool done;
++  };
++  static std::vector<Tilt> &plan() {
++    static std::vector<Tilt> events;
++    static bool read = false;
++    if (!read) {
++      read = true;
++      const char *env = std::getenv("CROSSPOINT_SIM_TILT");
++      std::string text = env ? env : "";
++      size_t pos = 0;
++      while (pos < text.size()) {
++        size_t end = text.find(';', pos);
++        if (end == std::string::npos) end = text.size();
++        const std::string item = text.substr(pos, end - pos);
++        const size_t colon = item.find(':');
++        if (colon != std::string::npos && colon + 1 < item.size())
++          events.push_back({std::strtoul(item.c_str(), nullptr, 10), item[colon + 1], false});
++        pos = end + 1;
++      }
++    }
++    return events;
++  }
++  static bool take(const char dir) {
++    const unsigned long now = millis();
++    for (auto &e : plan())
++      if (!e.done && e.dir == dir && e.at <= now) {
++        e.done = true;
++        return true;
++      }
++    return false;
++  }
++
++public:
+ };

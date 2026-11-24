@@ -865,7 +865,7 @@ void SleepActivity::renderDefaultSleepScreen() const {
   const bool inverted = SETTINGS.sleepScreen != CrossPointSettings::SLEEP_SCREEN_MODE::LIGHT;
   renderer.clearScreen();
   GrayLogo::drawBase(renderer, logoX, logoY, inverted);
-  renderer.drawCenteredText(UI_12_FONT_ID, pageHeight - GrayLogo::WORDMARK_FROM_BOTTOM, tr(STR_CROSSPOINT), true,
+  renderer.drawCenteredText(UI_12_FONT_ID, pageHeight - GrayLogo::WORDMARK_FROM_BOTTOM, "Sumitsubo" /* Sumitsubo: the wordmark */, true,
                             EpdFontFamily::BOLD);
   renderer.drawCenteredText(SMALL_FONT_ID, pageHeight - GrayLogo::STATUS_FROM_BOTTOM, tr(STR_SLEEPING));
 

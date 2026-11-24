@@ -8,6 +8,7 @@
 #include "MappedInputManager.h"
 #include "UITheme.h"
 #include "activities/Activity.h"
+#include "icons/sumitsuboIcons.h"  // Sumitsubo
 #include "icons/tabBarIcons.h"
 
 namespace {
@@ -21,7 +22,7 @@ struct TabIcons {
 // Index order must match HomeTab.
 constexpr TabIcons ICONS[HomeTabBar::COUNT] = {
     {HomeIcon, HomeFilledIcon},   {LibraryTabIcon, LibraryTabFilledIcon},   {TransferTabIcon, TransferTabFilledIcon},
-    {StatsIcon, StatsFilledIcon}, {SettingsTabIcon, SettingsTabFilledIcon},
+    {StatsIcon, StatsFilledIcon}, {SettingsTabIcon, SettingsTabFilledIcon}, {StudyTabIcon, StudyTabFilledIcon},  // Sumitsubo: Study
 };
 
 // Horizontal band the slots divide up: the theme's side padding, so the outer icons line up with
@@ -143,6 +144,9 @@ void HomeTabBar::activate(const HomeTab tab, const HomeTab current) {
       break;
     case HomeTab::Settings:
       activityManager.goToSettings();
+      break;
+    case HomeTab::Study:  // Sumitsubo
+      activityManager.goToStudy();
       break;
     default:
       break;

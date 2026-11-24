@@ -1,5 +1,6 @@
 #include "ReaderActivity.h"
 
+#include <ReaderLink.h>  // Sumitsubo
 #include <FontCacheManager.h>
 #include <FsHelpers.h>
 #include <HalStorage.h>
@@ -136,6 +137,7 @@ void ReaderActivity::rememberBookOnceRendered() {
 }
 
 void ReaderActivity::onExit() {
+  sumitsubo::link::close();  // Sumitsubo: what the open book had loaded of Study
   Activity::onExit();
   ReaderUtils::flushReadingStats(readingSessionStartMs, true, hasBook() ? bookPath.c_str() : nullptr,
                                  hasBook() ? getBookLanguage() : nullptr);

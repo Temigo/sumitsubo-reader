@@ -168,6 +168,10 @@ class DictionaryDefinitionActivity final : public Activity {
   void fetchMoreEntries();
   static void prepareDraft(Entry& entry);
   DictionaryPanel::MiningFeedback miningFeedback_;
+  // Sumitsubo: a word that has a card in Study is not saved again.
+  std::string studyWord_;
+  bool studyHas_ = false;
+  bool inStudy();
   void saveSentence();
   bool showingEntry() const { return !onLoadingPage && currentEntry < entries.size(); }
   bool miningAvailable() const { return showingEntry() && entries[currentEntry].draft.valid(); }

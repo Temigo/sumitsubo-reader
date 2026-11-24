@@ -1,5 +1,9 @@
 # CrossPoint User Guide
 
+> This is Matcha Reader's guide, kept as it is: Sumitsubo Reader is Matcha with a Study mode added, and
+> everything below applies. Study has its own page, [docs/study.md](docs/study.md). Where this guide
+> says Matcha, the device says Sumitsubo.
+
 This guide covers the **CrossPoint** firmware as shipped in Matcha Reader: the buttons, the main screens and the reading features.
 
 > [!TIP]

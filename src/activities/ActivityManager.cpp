@@ -1,3 +1,4 @@
+#include "sumitsubo/StudyActivity.h"  // Sumitsubo
 #include "ActivityManager.h"
 
 #include <BlePageTurner.h>
@@ -351,6 +352,10 @@ void ActivityManager::goToFileTransfer() {
 
 void ActivityManager::goToReadingStats() {
   replaceActivity(std::make_unique<ReadingStatsActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToStudy() {  // Sumitsubo
+  replaceActivity(std::make_unique<StudyActivity>(renderer, mappedInput));
 }
 
 void ActivityManager::goToJoinNetwork() {

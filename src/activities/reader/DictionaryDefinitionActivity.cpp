@@ -12,6 +12,9 @@
 #include <cstdio>
 #include <cstring>
 
+#include <ReaderLink.h>  // Sumitsubo
+
+#include "../sumitsubo/SdStore.h"  // Sumitsubo
 #include "BookStats.h"
 #include "CrossPointSettings.h"
 #include "HapticFeedback.h"
@@ -394,8 +397,20 @@ bool DictionaryDefinitionActivity::layoutHtmlPages() {
   return true;
 }
 
+bool DictionaryDefinitionActivity::inStudy() {  // Sumitsubo
+  if (!showingEntry()) return false;
+  const std::string& word = entries[currentEntry].draft.card.word;
+  if (word != studyWord_) {
+    studyWord_ = word;
+    SdStore store;
+    studyHas_ = sumitsubo::link::inStudy(store, word);
+  }
+  return studyHas_;
+}
+
 void DictionaryDefinitionActivity::saveSentence() {
   if (!showingEntry()) return;
+  if (inStudy()) return;  // Sumitsubo: it has a card already
   auto& draft = entries[currentEntry].draft;
   if (!draft.valid()) return;
   draft.card.date = sentencemining::today();  // the day of the save, not of the lookup
@@ -584,7 +599,7 @@ void DictionaryDefinitionActivity::render(RenderLock&&) {
   }
   const auto labels =
       mappedInput.mapLabels(tr(STR_BACK),
-                            miningAvailable() ? (miningFeedback_.saved() ? tr(STR_MINING_SAVED) : tr(STR_MINING_SAVE))
+                            miningAvailable() ? (inStudy() ? "In Study" /* Sumitsubo */ : miningFeedback_.saved() ? tr(STR_MINING_SAVED) : tr(STR_MINING_SAVE))
                             : nested.lookup && showingEntry() ? tr(STR_SELECT)
                                                               : "",
                             hasPrev ? "<" : "", hasNext ? ">" : "");

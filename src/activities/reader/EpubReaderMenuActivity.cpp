@@ -7,6 +7,8 @@
 
 #include <cstdio>
 
+#include <ReaderLink.h>  // Sumitsubo
+
 #include "CrossPointSettings.h"
 #include "MappedInputManager.h"
 #include "ReaderUtils.h"
@@ -307,6 +309,9 @@ void EpubReaderMenuActivity::buildScreen(UiScreen& screen) {
                    std::to_string(totalPages) + pages + "  |  ";
   }
   progressLine += std::string(tr(STR_BOOK_PREFIX)) + std::to_string(bookProgressPercent) + "%";
+  if (sumitsubo::link::known()) {  // Sumitsubo: how much of this book you can read today. First, so a long line does not cut it.
+    progressLine = "Readable: " + std::to_string(sumitsubo::link::readablePercent()) + "%  |  " + progressLine;
+  }
   const fui::Rect band = screen.takeTop(static_cast<int16_t>(metrics.tabBarHeight));
   const int16_t pad = screen.theme().headerSidePadding;
   screen.target().text(band.inset(fui::Insets{0, pad, 0, pad}), progressLine.c_str(), screen.theme().smallText);

@@ -40,6 +40,8 @@
 #include <numeric>
 
 #include "../../BookFonts.h"
+#include "../sumitsubo/SdStore.h"  // Sumitsubo
+#include <ReaderLink.h>            // Sumitsubo
 #include "../../util/BookmarkFile.h"
 #include "BookmarkEntry.h"
 #include "ChapterBuildGate.h"
@@ -690,6 +692,10 @@ void EpubReaderActivity::onReaderEnter() {
   loadCachedBookmarks();
   if (!CLIPPINGS.loadForBook(epub->getPath(), epub->getTitle(), epub->getAuthor(), "epub")) {
     LOG_ERR("CLIP", "Failed to load clippings for %s", epub->getPath().c_str());
+  }
+  {  // Sumitsubo: what Study knows of this book (readability, new words, furigana no longer needed)
+    SdStore store;
+    sumitsubo::link::open(store, epub->getPath());
   }
 }
 

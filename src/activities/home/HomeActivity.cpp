@@ -1,3 +1,4 @@
+#include "activities/sumitsubo/StudyActivity.h"  // Sumitsubo
 #include "HomeActivity.h"
 
 #include <Bitmap.h>
@@ -43,7 +44,7 @@ constexpr unsigned long LONG_PRESS_MS = 1000;
 int HomeActivity::getMenuItemCount() const {
   // The cover grid's band is the six-entry tab bar (Home included, and no OPDS), not the classic
   // home menu, so its selector space is books followed by exactly those six.
-  int count = coverGridUi ? HomeTabBar::count() : 5;  // Library, Browse Files, File Transfer, Insights, Settings
+  int count = coverGridUi ? HomeTabBar::count() : 6;  // Study (Sumitsubo), Library, Browse Files, File Transfer, Insights, Settings
   if (!recentBooks.empty()) {
     count += recentBooks.size();
   }
@@ -463,6 +464,9 @@ void HomeActivity::loop() {
       return;
     }
     switch (indexToMenuItem(menuIndex, slotItem())) {
+      case HomeMenuItem::STUDY:  // Sumitsubo
+        activityManager.replaceActivity(std::make_unique<StudyActivity>(renderer, mappedInput));
+        break;
       case HomeMenuItem::FILE_BROWSER:
         onFileBrowserOpen();
         break;
@@ -644,11 +648,13 @@ void HomeActivity::render(RenderLock&&) {
   std::vector<const char*> menuItems = {tr(STR_MENU_RECENT_BOOKS), tr(STR_BROWSE_FILES), tr(STR_FILE_TRANSFER),
                                         tr(STR_STATS), tr(STR_SETTINGS_TITLE)};
   std::vector<UIIcon> menuIcons = {Library, Folder, Transfer, Stats, Settings};
+  menuItems.insert(menuItems.begin(), "Study");  // Sumitsubo
+  menuIcons.insert(menuIcons.begin(), Book);
 
   // Plugins while the plugin system is on, else the OPDS browser when a server is set (see slotItem).
   if (slotItem() != HomeMenuItem::NONE) {
-    menuItems.insert(menuItems.begin() + 2, hasPlugins ? tr(STR_PLUGINS) : tr(STR_OPDS_BROWSER));
-    menuIcons.insert(menuIcons.begin() + 2, hasPlugins ? Plugins : Library);
+    menuItems.insert(menuItems.begin() + 3, hasPlugins ? tr(STR_PLUGINS) : tr(STR_OPDS_BROWSER));
+    menuIcons.insert(menuIcons.begin() + 3, hasPlugins ? Plugins : Library);
   }
 
   if (metrics.homeContinueReadingInMenu && !recentBooks.empty()) {

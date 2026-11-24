@@ -22,7 +22,7 @@ namespace {
 // This fork ships its own firmware, so updates come from its own releases -- pointing
 // this at upstream would replace Matcha with stock CrossPoint on the next OTA.
 // releases/latest skips pre-releases, so nightlies are never served to OTA.
-constexpr char latestReleaseUrl[] = "https://api.github.com/repos/eszter007/matcha-reader/releases/latest";
+constexpr char latestReleaseUrl[] = "https://api.github.com/repos/OWNER/sumitsubo-reader/releases/latest"  // Sumitsubo: an update must not replace Study with plain Matcha;
 }  // namespace
 
 OtaUpdater::OtaUpdaterError OtaUpdater::checkForUpdate() {

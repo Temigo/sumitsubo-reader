@@ -1,5 +1,6 @@
 #include "VerticalTextBlock.h"
 
+#include <ReaderLink.h>  // Sumitsubo
 #include <Utf8.h>
 
 #include <algorithm>
@@ -81,6 +82,54 @@ SizedCell sizedCell(const SizedCell& body, const uint8_t scale8) {
   return c;
 }
 
+// Sumitsubo: a thin line on the left of every word on the page that is still new to you (Study's
+// Options). The words come from a filter the desktop wrote for this book; the longest match wins.
+void markNewWords(const GfxRenderer& renderer, const VerticalPage& page, const int cellPx, const int offsetX, const int offsetY,
+                  const bool black) {
+  const size_t n = page.glyphs.size(), maxBytes = sumitsubo::link::maxWordBytes();
+  if (maxBytes == 0) return;
+  std::string word;
+  for (size_t i = 0; i < n;) {
+    size_t best = 0;
+    word.clear();
+    for (size_t j = i; j < n; ++j) {
+      const VerticalGlyph& g = page.glyphs[j];
+      if (g.renderKind == VerticalGlyph::RotatedRun || g.renderKind == VerticalGlyph::UprightRun ||
+          VerticalParsedText::isImageMarker(g.codepoint) || g.paragraphIndex != page.glyphs[i].paragraphIndex) {
+        break;
+      }
+      const uint32_t cp = g.codepoint;
+      if (cp < 0x80) {
+        word += static_cast<char>(cp);
+      } else if (cp < 0x800) {
+        word += static_cast<char>(0xC0 | (cp >> 6));
+        word += static_cast<char>(0x80 | (cp & 0x3F));
+      } else if (cp < 0x10000) {
+        word += static_cast<char>(0xE0 | (cp >> 12));
+        word += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+        word += static_cast<char>(0x80 | (cp & 0x3F));
+      } else {
+        word += static_cast<char>(0xF0 | (cp >> 18));
+        word += static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
+        word += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+        word += static_cast<char>(0x80 | (cp & 0x3F));
+      }
+      if (word.size() > maxBytes) break;
+      if (sumitsubo::link::isNewWord(word)) best = j - i + 1;
+    }
+    if (best == 0) {
+      ++i;
+      continue;
+    }
+    for (size_t k = i; k < i + best; ++k) {
+      const VerticalGlyph& g = page.glyphs[k];
+      const int cell = glyphCellPx(g, cellPx);
+      renderer.fillRect(g.x + offsetX - 3, g.y + offsetY + 1, 2, std::max(1, cell - 2), black);
+    }
+    i += best;
+  }
+}
+
 // Returns the cell size it drew with, so a caller needing the same geometry (ruby) reuses it
 // instead of re-deriving it -- every derivation probes the reference glyph out of the SD font.
 int drawGlyphs(GfxRenderer& renderer, const VerticalPage& page, int fontId, int offsetX, int offsetY, bool black) {
@@ -112,6 +161,8 @@ int drawGlyphs(GfxRenderer& renderer, const VerticalPage& page, int fontId, int 
     }
     return slotBodies[slot];
   };
+
+  if (sumitsubo::link::marking()) markNewWords(renderer, page, cellPx, offsetX, offsetY, black);  // Sumitsubo
 
   // Styled-block borders (kakomi boxes, .k-solid-top separator rules). Rects share the glyphs'
   // cell-top coordinate space and the same offsets. `edges` says which lines to draw; EXTEND_*
@@ -291,6 +342,25 @@ void VerticalTextBlock::render(GfxRenderer& renderer, int fontId, int rubyFontId
     }
     const std::string& rubyText = *text;
     if (rubyText.empty()) continue;
+    {  // Sumitsubo: furigana you no longer need is left out (Study's Options)
+      std::string base;
+      for (size_t k = gi; k < segmentEnd; k++) {
+        const uint32_t cp = page_.glyphs[k].codepoint;
+        if (cp >= 0x800 && cp < 0x10000) {
+          base += static_cast<char>(0xE0 | (cp >> 12));
+          base += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+          base += static_cast<char>(0x80 | (cp & 0x3F));
+        } else if (cp >= 0x10000) {
+          base += static_cast<char>(0xF0 | (cp >> 18));
+          base += static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
+          base += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+          base += static_cast<char>(0x80 | (cp & 0x3F));
+        } else {
+          base += static_cast<char>(cp);
+        }
+      }
+      if (sumitsubo::link::hideFurigana(base, rubyText)) continue;
+    }
 
     // A base set at a CSS font-size takes ruby half ITS size, beside its own cell.
     const int s8 = g.scale8 == 0 ? 8 : g.scale8;

@@ -14,6 +14,7 @@
 #include <HalStorage.h>
 #include <HalSystem.h>
 #include <HalTiltSensor.h>
+#include <ReaderLink.h>  // Sumitsubo
 #include <I18n.h>
 #include <Logging.h>
 #include <Memory.h>
@@ -1313,7 +1314,8 @@ void loop() {
   // After the exclusive-storage return: both save settings to the SD card.
   handleSlideSwitch();
   if (nightlight::tick()) activityManager.requestUpdate();
-  halTiltSensor.update(SETTINGS.tiltPageTurn, SETTINGS.orientation, activityManager.isReaderActivity());
+  // Sumitsubo: Study also reads the tilt sensor, to answer a card.
+  halTiltSensor.update(SETTINGS.tiltPageTurn, SETTINGS.orientation, activityManager.isReaderActivity() || sumitsubo::studyWantsTilt);
 
   // Under the render lock, so a step never overlaps the themes' gauge reads.
   static bool gaugeCapacityPending = true;

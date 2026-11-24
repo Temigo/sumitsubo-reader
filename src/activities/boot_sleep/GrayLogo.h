@@ -27,11 +27,11 @@ class GfxRenderer;
 // starting black post-invert -- the calibrated start state the gray nudge expects. A custom logo
 // gets the same treatment: its footprint is computed from its white background on load.
 namespace GrayLogo {
-constexpr int WIDTH = 230;
-constexpr int HEIGHT = 324;
+constexpr int WIDTH = 440;  // Sumitsubo: the ink pot is wide where the cat was tall
+constexpr int HEIGHT = 219;
 // The smaller copy, for the Departures sleep screen on short panels.
-constexpr int SMALL_WIDTH = 130;
-constexpr int SMALL_HEIGHT = 183;
+constexpr int SMALL_WIDTH = 200;
+constexpr int SMALL_HEIGHT = 100;
 
 enum class Size : uint8_t { Regular, Small };
 // Wordmark and status line sit at the bottom of the screen, under the poster-size cat.
